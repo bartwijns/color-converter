@@ -2,11 +2,13 @@ package barryprojects.colorconverter;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -101,7 +103,7 @@ public class Main extends AppCompatActivity {
     } // end protected void onActivityResult
 
     // save and restore instance states
-    // I should have disabled screen rotation, but there are more cases where this might be needed
+    // screen rotation should be disabled, but there are more cases where this might be needed
     // also, I plan to implement an alternative landscape layout and will need these when (if) I do
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -120,8 +122,8 @@ public class Main extends AppCompatActivity {
         secondaryColor = savedInstanceState.getString(COLOR_SECONDARY);
         secondary = savedInstanceState.getBoolean(SECONDARY_STATE);
 
-        if(secondary) updateColor(FROM_CHANGE, secondaryColor.substring(1));
-        else updateColor(FROM_CHANGE, primaryColor.substring(1));
+        if(secondary) updateColor(FROM_CHANGE, secondaryColor);
+        else updateColor(FROM_CHANGE, primaryColor);
 
         display.setBackgroundColor(Color.parseColor(primaryColor));
         display.setTextColor(Color.parseColor(secondaryColor));
@@ -282,6 +284,12 @@ public class Main extends AppCompatActivity {
         public void onClick(View view) {
             switch(view.getId()) {
                 case R.id.button_picker:
+                    // color picker dialog does not work in landscape mode
+                    if(Main.this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                        Log.d("mymessage", "app is in landscape mode");
+                        Support.showToast(getApplicationContext(), R.string.err_picker_orientation);
+                        return;
+                    } // end if orientation
                     // show the color picker dialog
                     Intent pickerIntent = new Intent(getApplicationContext(), ColorPickerActivity.class);
                     if(secondary) pickerIntent.putExtra("com.barryprojects.colorconverter.color", secondaryColor);

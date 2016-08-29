@@ -1,6 +1,9 @@
 package barryprojects.colorconverter;
 
 
+import android.content.Context;
+import android.widget.Toast;
+
 import java.util.ArrayList;
 
 public class Support {
@@ -56,7 +59,7 @@ public class Support {
 
         String redHex = hex.substring(0, 2);
         String greenHex = hex.substring(2, 4);
-        String blueHex = hex.substring(4);
+        String blueHex = hex.substring(4, 6);
 
         // convert these strings to their decimal form
         ArrayList<Character> hexChars = getHexChars();
@@ -72,6 +75,25 @@ public class Support {
 
         return RGB;
     } // end public static String[] hexToRGB
+
+    public static void showToast(Context context, String text, boolean longToast) {
+        if(longToast) Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+        else Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+    } // end main public static void showToast
+
+    public static void showToast(Context context, String text) {
+        showToast(context, text, false);
+    } // end public static void showToast
+
+    public static void showToast(Context context, int stringId, boolean longToast) {
+        showToast(context, context.getResources().getString(stringId), longToast);
+    } // end public static void showToast
+
+    public static void showToast(Context context, int stringId) {
+        showToast(context, stringId, false);
+    } // end public static void showToast
+
+
 
 
     // private helper methods

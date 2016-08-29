@@ -14,6 +14,7 @@ import com.pavelsikun.vintagechroma.colormode.ColorMode;
 public class ColorPickerActivity extends AppCompatActivity {
     // servers solely for the purpose of creating and showing the color picker dialog
     // is a separate activity because I want to try and create this dialog myself eventually
+    // this thing sucks as a separate activity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

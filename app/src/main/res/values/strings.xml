@@ -16,4 +16,5 @@
     <string name="cancel">Cancel</string>
     <string name="cont">Continue</string>
     <string name="secondary_txt">Secondary color</string>
+    <string name="err_picker_orientation">Color picker is not available in landscape mode</string>
 </resources>
