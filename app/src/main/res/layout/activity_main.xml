@@ -134,19 +134,35 @@
 
     </LinearLayout>
 
-    <com.github.danielnilsson9.colorpickerview.view.ColorPanelView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/color_preview"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/linearLayout2" />
-
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/picker"
         android:id="@+id/button_picker"
-        android:layout_alignBottom="@+id/color_preview"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/secondary_txt"
+        android:id="@+id/disp_color"
+        android:layout_above="@+id/button_picker"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/check_secondary"
+        android:gravity="center"
+        android:textColor="@color/startingColor"
+        android:background="@color/startingColor" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/secondary_txt"
+        android:id="@+id/check_secondary"
+        android:layout_below="@+id/linearLayout2"
+        android:layout_alignParentStart="true"
+        android:checked="false" />
 
 </RelativeLayout>

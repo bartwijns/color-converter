@@ -1,5 +1,7 @@
 package barryprojects.colorconverter;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -7,89 +9,105 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
-
-import com.github.danielnilsson9.colorpickerview.view.ColorPanelView;
-import com.pavelsikun.vintagechroma.ChromaDialog;
-import com.pavelsikun.vintagechroma.IndicatorMode;
-import com.pavelsikun.vintagechroma.OnColorSelectedListener;
-import com.pavelsikun.vintagechroma.colormode.ColorMode;
-
-import java.util.Locale;
+import android.widget.TextView;
 
 public class Main extends AppCompatActivity {
 
-    // elements for the main window
+    // UI elements
     private EditText hexEdit;
     private EditText redEdit;
     private EditText greenEdit;
     private EditText blueEdit;
+    private TextView display;
+    private CheckBox secondaryCheck;
     private Button pickerButton;
-    private ColorPanelView colorShow;
+    
+    // variables to store colors
+    private String primaryColor;
+    private String secondaryColor;
+    
+    // some booleans
+    private boolean appEditing = false; // true when app is editing text fields
+    private boolean secondary = false; // true when user is picking the secondary color
+    
+    // constants for the updateColor function to indicate the updated component
+    private static final int FROM_HEX = 0;
+    private static final int FROM_RED = 1;
+    private static final int FROM_GREEN = 2;
+    private static final int FROM_BLUE = 3;
+    private static final int FROM_DLG = 4;
+    private static final int FROM_CHANGE = 5;
 
-    private String hexColor;
-    private int redColor;
-    private int greenColor;
-    private int blueColor;
+    // request constants for launching other activities
+    private static final int REQUEST_COLOR = 1;
 
-    private boolean invalidRGB; // true when at least one of the RGB values is invalid
+    // number sign, to be put in front of every hex color code
+    public static final String HASHTAG = "#";
 
-    // constants for putting values into a bundle and recreating instance state
-    private static final String HEXTAG = "hex";
-    private static final String REDTAG = "red";
-    private static final String GREENTAG = "green";
-    private static final String BLUETAG = "blue";
-
-
+    // keys to identify data stored in bundles
+    private static final String COLOR_PRIMARY = "primary color";
+    private static final String COLOR_SECONDARY = "secondary color";
+    private static final String SECONDARY_STATE = "checkbox state";
+    
+    
     // overridden methods
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        
+        // getting UI elements
         hexEdit = (EditText) findViewById(R.id.txt_hex);
         redEdit = (EditText) findViewById(R.id.txt_red);
         greenEdit = (EditText) findViewById(R.id.txt_green);
         blueEdit = (EditText) findViewById(R.id.txt_blue);
+        
+        display = (TextView) findViewById(R.id.disp_color);
+        secondaryCheck = (CheckBox) findViewById(R.id.check_secondary);
         pickerButton = (Button) findViewById(R.id.button_picker);
-        colorShow = (ColorPanelView) findViewById(R.id.color_preview);
+        
+        // setting their listeners
+        hexEdit.addTextChangedListener(new HexListener());
+        redEdit.addTextChangedListener(new RedListener());
+        greenEdit.addTextChangedListener(new GreenListener());
+        blueEdit.addTextChangedListener(new BlueListener());
 
-        // all EditTexts should have a default value
-        hexColor = "#" + hexEdit.getText().toString().trim();
-        redColor = Integer.valueOf(redEdit.getText().toString().trim());
-        greenColor = Integer.valueOf(greenEdit.getText().toString().trim());
-        blueColor = Integer.valueOf(blueEdit.getText().toString().trim());
-        invalidRGB = false;
+        ButtonListener listener = new ButtonListener();
+        secondaryCheck.setOnClickListener(listener);
+        pickerButton.setOnClickListener(listener);
 
-        colorShow.setColor(Color.parseColor(hexColor));
-
-        hexEdit.addTextChangedListener(new HexCodeListener());
-        redEdit.addTextChangedListener(new RedCodeListener());
-        greenEdit.addTextChangedListener(new GreenCodeListener());
-        blueEdit.addTextChangedListener(new BlueCodeListener());
-
-        // if tag is not null, it is the app who edited the text
-        hexEdit.setTag(null);
-        redEdit.setTag(null);
-        greenEdit.setTag(null);
-        blueEdit.setTag(null);
-
-        pickerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                colorPickerDialog();
-            } // end public void onClick
-        }); // end anonymous OnClickListener
-
+        // initialize colors to their default values
+        primaryColor = HASHTAG + getString(R.string.default_hex);
+        secondaryColor = HASHTAG + getString(R.string.default_hex);
+        
     } // end protected void onCreate
 
     @Override
+    protected void onActivityResult(int request, int result, Intent data) {
+        if(result == Activity.RESULT_OK) {
+            switch(request) {
+
+                case REQUEST_COLOR:
+                    updateColor(FROM_DLG, data.getStringExtra("com.barryprojects.colorconverter.color"));
+
+                    break;
+
+            } // end switch request
+
+        } // end if result
+
+    } // end protected void onActivityResult
+
+    // save and restore instance states
+    // I should have disabled screen rotation, but there are more cases where this might be needed
+    // also, I plan to implement an alternative landscape layout and will need these when (if) I do
+    @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putString(HEXTAG, hexColor);
-        savedInstanceState.putInt(REDTAG, redColor);
-        savedInstanceState.putInt(GREENTAG, greenColor);
-        savedInstanceState.putInt(BLUETAG, blueColor);
+        savedInstanceState.putString(COLOR_PRIMARY, primaryColor);
+        savedInstanceState.putString(COLOR_SECONDARY, secondaryColor);
+        savedInstanceState.putBoolean(SECONDARY_STATE, secondaryCheck.isChecked());
 
         super.onSaveInstanceState(savedInstanceState);
     } // end public void onSaveInstanceState
@@ -98,195 +116,262 @@ public class Main extends AppCompatActivity {
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
-        hexColor = savedInstanceState.getString(HEXTAG);
-        redColor = savedInstanceState.getInt(REDTAG);
-        greenColor = savedInstanceState.getInt(GREENTAG);
-        blueColor = savedInstanceState.getInt(BLUETAG);
-        updateColor();
+        primaryColor = savedInstanceState.getString(COLOR_PRIMARY);
+        secondaryColor = savedInstanceState.getString(COLOR_SECONDARY);
+        secondary = savedInstanceState.getBoolean(SECONDARY_STATE);
+
+        if(secondary) updateColor(FROM_CHANGE, secondaryColor.substring(1));
+        else updateColor(FROM_CHANGE, primaryColor.substring(1));
+
+        display.setBackgroundColor(Color.parseColor(primaryColor));
+        display.setTextColor(Color.parseColor(secondaryColor));
 
     } // end public void onRestoreInstanceState
+    
+    // helper methods
+    private void updateColor(int from, String colorTxt) {
+        String red;
+        String green;
+        String blue;
+
+        String[] RGB;
+
+        switch(from) {
+            case FROM_HEX:
+                RGB = Support.hexToRGB(colorTxt);
+                appEditing = true;
+
+                redEdit.setText(RGB[0]);
+                greenEdit.setText(RGB[1]);
+                blueEdit.setText(RGB[2]);
+
+                appEditing = false;
+
+                if(secondary) {
+                    secondaryColor = HASHTAG + colorTxt;
+                    display.setTextColor(Color.parseColor(secondaryColor));
+                } // end if secondary
+                else {
+                    primaryColor = HASHTAG + colorTxt;
+                    display.setBackgroundColor(Color.parseColor(primaryColor));
+                } // end else
+
+                break;
+
+            case FROM_RED:
+                // first check if the other RGB values are valid (this doesn't get called if the red one is invalid)
+                if(!Support.isValidRGB(greenEdit.getText().toString().trim()) || !Support.isValidRGB(blueEdit.getText().toString().trim())) return;
+
+                // if they are, get their values and set colors accordingly
+                green = greenEdit.getText().toString().trim();
+                blue = blueEdit.getText().toString().trim();
+
+                appEditing = true;
+                if(secondary) {
+                    secondaryColor = Support.RGBToHex(colorTxt, green, blue);
+                    display.setTextColor(Color.parseColor(secondaryColor));
+                    hexEdit.setText(secondaryColor);
+                } // end if secondary
+                else {
+                    primaryColor = Support.RGBToHex(colorTxt, green, blue);
+                    display.setBackgroundColor(Color.parseColor(primaryColor));
+                    hexEdit.setText(primaryColor.substring(1));
+                } // end else
+                appEditing = false;
+
+                break;
+
+            case FROM_GREEN:
+                // first check if the other RGB values are valid (this doesn't get called if the green one is invalid)
+                if(!Support.isValidRGB(redEdit.getText().toString().trim()) || !Support.isValidRGB(blueEdit.getText().toString().trim())) return;
+
+                // if they are, get their values and set colors accordingly
+                red = redEdit.getText().toString().trim();
+                blue = blueEdit.getText().toString().trim();
+
+                appEditing = true;
+                if(secondary) {
+                    secondaryColor = Support.RGBToHex(red, colorTxt, blue);
+                    display.setTextColor(Color.parseColor(secondaryColor));
+                    hexEdit.setText(secondaryColor.substring(1));
+                } // end if secondary
+                else {
+                    primaryColor = Support.RGBToHex(red, colorTxt, blue);
+                    display.setBackgroundColor(Color.parseColor(primaryColor));
+                    hexEdit.setText(primaryColor.substring(1));
+                } // end else
+                appEditing = false;
+
+                break;
+
+            case FROM_BLUE:
+                // first check if the other RGB values are valid (this does't get called if the blue one is invalid)
+                if(!Support.isValidRGB(redEdit.getText().toString().trim()) || !Support.isValidRGB(greenEdit.getText().toString().trim())) return;
+
+                // if they are, get their values and set colors accordingly
+                red = redEdit.getText().toString().trim();
+                green = greenEdit.getText().toString().trim();
+
+                appEditing = true;
+                if(secondary) {
+                    secondaryColor = Support.RGBToHex(red, green, colorTxt);
+                    display.setTextColor(Color.parseColor(secondaryColor));
+                    hexEdit.setText(secondaryColor.substring(1));
+                } // end if secondary
+                else {
+                    primaryColor = Support.RGBToHex(red, green, colorTxt);
+                    display.setBackgroundColor(Color.parseColor(primaryColor));
+                    hexEdit.setText(primaryColor.substring(1));
+                } // end else
+                appEditing = false;
+
+                break;
+
+            case FROM_DLG:
+                // here, everything will be edited
+                // first, the color screen
+                if(secondary) {
+                    secondaryColor = colorTxt;
+                    display.setTextColor(Color.parseColor(secondaryColor));
+                } // end if secondary
+                else {
+                    primaryColor = colorTxt;
+                    display.setBackgroundColor(Color.parseColor(primaryColor));
+                } // end else
+
+                // now edit the text fields
+                appEditing = true;
+
+                hexEdit.setText(colorTxt.substring(1));
+                RGB = Support.hexToRGB(colorTxt.substring(1));
+
+                redEdit.setText(RGB[0]);
+                greenEdit.setText(RGB[1]);
+                blueEdit.setText(RGB[2]);
+
+                appEditing = false;
+
+                break;
+
+            case FROM_CHANGE:
+                // update all text fields
+                // assuming colorTxt is a valid 6-digit hexadecimal string
+                appEditing = true;
+
+                hexEdit.setText(colorTxt);
+
+                RGB = Support.hexToRGB(colorTxt.substring(1));
+                redEdit.setText(RGB[0]);
+                greenEdit.setText(RGB[1]);
+                blueEdit.setText(RGB[2]);
+
+                appEditing = false;
+
+                break;
 
 
-    // Helper functions
-
-    private void checkRGB() {
-        // if any text field is empty, the RGB color codes are invalid
-        invalidRGB = redEdit.getText().toString().trim().isEmpty() || greenEdit.toString().trim().isEmpty() || blueEdit.getText().toString().trim().isEmpty();
-
-        // if they are not empty, check their value to see if they are really valid
-        if(!invalidRGB) {
-            int red = Integer.valueOf(redEdit.getText().toString().trim());
-            int green = Integer.valueOf(greenEdit.getText().toString().trim());
-            int blue = Integer.valueOf(blueEdit.getText().toString().trim());
-
-            String redStr = MiscFunctions.intToHex(red);
-            String greenStr = MiscFunctions.intToHex(green);
-            String blueStr = MiscFunctions.intToHex(blue);
-
-            invalidRGB = redStr.isEmpty() || greenStr.isEmpty() || blueStr.isEmpty();
-        } // end if invalidRGB
-
-    } // end private void checkRGB
-
-    private void updateColor() {
-
-        int red = Integer.valueOf(redEdit.getText().toString().trim());
-        int green = Integer.valueOf(greenEdit.getText().toString().trim());
-        int blue = Integer.valueOf(blueEdit.getText().toString().trim());
-
-        String redStr = MiscFunctions.intToHex(red);
-        String greenStr = MiscFunctions.intToHex(green);
-        String blueStr = MiscFunctions.intToHex(blue);
-
-        hexColor = "#" + redStr + greenStr + blueStr;
-        colorShow.setColor(Color.parseColor(hexColor));
-
-        // tags are used to tell the TextWatchers the app is editing this field instead of the user
-        hexEdit.setTag(getString(R.string.editing_tag));
-        hexEdit.setText(hexColor.substring(1));
-        hexEdit.setTag(null);
+        } // end switch from
 
     } // end private void updateColor
-
-    private void colorPickerDialog() {
-
-        ChromaDialog.Builder builder = new ChromaDialog.Builder();
-        builder.initialColor(Color.parseColor(hexColor));
-        builder.colorMode(ColorMode.RGB);
-        builder.indicatorMode(IndicatorMode.DECIMAL);
-        builder.onColorSelected(new OnColorSelectedListener() {
-            @Override
-            public void onColorSelected(int color) {
-                hexColor = String.format(Locale.getDefault(), "#%06X", (0xFFFFFF & color));
-                hexEdit.setText(hexColor.substring(1)); // omit the starting #
-            } // end public void onColorSelected
-        }); // end anonymous OnColorSelectedListener
-
-        builder.create().show(getSupportFragmentManager(), getString(R.string.picker));
-
-    } // end private void colorPickerDialog
-
-
+    
+    
     // listeners
-
-    private abstract class ColorCodesListener implements TextWatcher {
-        // all methods are empty because the required methods will be overridden in the subclasses
+    // OnClickListener for both buttons
+    private class ButtonListener implements View.OnClickListener {
         @Override
-        public void afterTextChanged(Editable e) {} // empty method
+        public void onClick(View view) {
+            switch(view.getId()) {
+                case R.id.button_picker:
+                    // show the color picker dialog
+                    Intent pickerIntent = new Intent(getApplicationContext(), ColorPickerActivity.class);
+                    if(secondary) pickerIntent.putExtra("com.barryprojects.colorconverter.color", secondaryColor);
+                    else pickerIntent.putExtra("com.barryprojects.colorconverter.color", primaryColor);
+                    startActivityForResult(pickerIntent, REQUEST_COLOR);
+
+                    break;
+                
+                case R.id.check_secondary:
+                    secondary = !secondary;
+
+                    // also update text fields
+                    if(secondary) updateColor(FROM_CHANGE, secondaryColor);
+                    else updateColor(FROM_CHANGE, primaryColor);
+                    
+                    break;
+                
+            } // end switch view.getId
+            
+        } // end public void onClick
+    } // end private class ButtonListener
+
+    // TextWatcher for the EditTexts, will be subclassed for each EditText
+    private abstract class TextListener implements TextWatcher {
         @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {} // empty method
+        public void afterTextChanged(Editable e) {} // just an empty method
         @Override
-        public void onTextChanged(CharSequence s, int start, int beofre, int count) {} // empty method
-    } // end private abstract class ColorCodesListener
-
-    private class HexCodeListener extends ColorCodesListener {
+        public void onTextChanged(CharSequence s, int start, int before, int count) {} // just an empty method
         @Override
-        public void afterTextChanged(Editable e) {
-            // if the app edited this field, return
-            if(hexEdit.getTag() != null) return;
-            // first check if entered text is a valid hex code
-            if(!MiscFunctions.isValidHex(e.toString())) return;
-
-
-            // if it is, convert it to RGB and show it in the RGB text fields and the colorShow
-            String redStr = e.toString().substring(0, 2);
-            String greenStr = e.toString().substring(2, 4);
-            String blueStr = e.toString().substring(4, 6);
-
-            hexColor = "#" + e.toString();
-            redColor = MiscFunctions.hexToInt(redStr);
-            greenColor = MiscFunctions.hexToInt(greenStr);
-            blueColor = MiscFunctions.hexToInt(blueStr);
-
-            // tags are used to tell the TextWatchers the app is editing the text instead of the user
-            redEdit.setTag(getString(R.string.editing_tag));
-            greenEdit.setTag(getString(R.string.editing_tag));
-            blueEdit.setTag(getString(R.string.editing_tag));
-
-            redEdit.setText(String.valueOf(redColor));
-            greenEdit.setText(String.valueOf(greenColor));
-            blueEdit.setText(String.valueOf(blueColor));
-
-            redEdit.setTag(null);
-            greenEdit.setTag(null);
-            blueEdit.setTag(null);
-
-            colorShow.setColor(Color.parseColor(hexColor));
-
-        } // end public void afterTextChanged
-    } // end private class HexCodeListener
-
-    private class RedCodeListener extends ColorCodesListener {
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {} // just an empty method
+    } // end private abstract class TextListener
+    
+    private class HexListener extends TextListener {
         @Override
         public void afterTextChanged(Editable e) {
-            // if the app edited this field, do nothing
-            if(redEdit.getTag()!= null) return;
-
-            if(e.toString().isEmpty()) {
-                invalidRGB = true;
-                return;
-            } // end if e.toString
-
-            int color = Integer.valueOf(e.toString().trim());
-            String hex = MiscFunctions.intToHex(color);
-            // if returned string is empty, entered integer was too high
-            if(hex.isEmpty()) {
-                invalidRGB = true;
-                return;
-            } // end if hex.isEmpty
-
-            checkRGB();
-            if(!invalidRGB) updateColor();
+            // do nothing if the app edited this
+            if(appEditing) return;
+            
+            // check if entered color is a valid hex color code, return if it is not
+            String hex = e.toString().trim();
+            if(!Support.isValidHex(hex)) return;
+            
+            // update the colors
+            updateColor(FROM_HEX, hex);            
         } // end public void afterTextChanged
-    } // end private class RedCodeListener
-
-    private class GreenCodeListener extends ColorCodesListener {
+    } // end private class HexListener
+    
+    private class RedListener extends TextListener {
         @Override
         public void afterTextChanged(Editable e) {
-            // if the app edited this field, do nothing
-            if(greenEdit.getTag() != null) return;
-
-            if(e.toString().isEmpty()) {
-                invalidRGB = true;
-                return;
-            } // end if e.toString
-
-            int color = Integer.valueOf(e.toString().trim());
-
-            String hex = MiscFunctions.intToHex(color);
-            // if returned string is empty, entered integer was too high
-            if(hex.isEmpty()) {
-                invalidRGB = true;
-                return;
-            } // end if hex.isEmpty
-
-            checkRGB();
-            if(!invalidRGB) updateColor();
-
+            // do nothing if the app edited this
+            if(appEditing) return;
+            
+            // check if entered value is valid, return if it is not
+            String red = e.toString().trim();
+            if(!Support.isValidRGB(red)) return;
+            
+            // update the colors
+            updateColor(FROM_RED, red);
         } // end public void afterTextChanged
-    } // end private class GreenCodeListener
-
-    private class BlueCodeListener extends ColorCodesListener {
+    } // end private class RedListener
+    
+    private class GreenListener extends TextListener {
         @Override
         public void afterTextChanged(Editable e) {
-            // if the app edited this field, do nothing
-            if(blueEdit.getTag() != null) return;
-            if(e.toString().isEmpty()) {
-                invalidRGB = true;
-                return;
-            } // end if e.toString
-
-            int color = Integer.valueOf(e.toString().trim());
-
-            String hex = MiscFunctions.intToHex(color);
-            // if returned string is empty, entered integer was too high
-            if(hex.isEmpty()) {
-                invalidRGB = true;
-                return;
-            } // end if hex.isEmpty
-            checkRGB();
-            if(!invalidRGB) updateColor();
+            // do nothing if the app edited this
+            if(appEditing) return;
+            
+            // check if entered value is valid, return if it is not
+            String green = e.toString().trim();
+            if(!Support.isValidRGB(green)) return;
+            
+            // update the colors
+            updateColor(FROM_GREEN, green);
         } // end public void afterTextChanged
-    } // end private class BlueCodeListener
+    } // end private class GreenListener
+    
+    private class BlueListener extends TextListener {
+        @Override
+        public void afterTextChanged(Editable e) {
+            // do nothing if the app edited this
+            if (appEditing) return;
 
+            // check if entered value is valid, return if it is not
+            String blue = e.toString().trim();
+            if (!Support.isValidRGB(blue)) return;
+
+            // update the colors
+            updateColor(FROM_BLUE, blue);
+        } // end public void afterTextChanged
+    } // end private class BlueListener
+    
 } // end public class Main

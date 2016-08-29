@@ -13,6 +13,7 @@
     <string name="default_red">0</string>
     <string name="default_green">0</string>
     <string name="default_blue">0</string>
-    <string name="editing_tag">Edited by app</string>
     <string name="cancel">Cancel</string>
+    <string name="cont">Continue</string>
+    <string name="secondary_txt">Secondary color</string>
 </resources>
