@@ -13,8 +13,10 @@
     <string name="default_red">0</string>
     <string name="default_green">0</string>
     <string name="default_blue">0</string>
+    <string name="default_alpha">255</string>
     <string name="cancel">Cancel</string>
     <string name="cont">Continue</string>
     <string name="secondary_txt">Secondary color</string>
     <string name="err_picker_orientation">Color picker is not available in landscape mode</string>
+    <string name="alpha_txt">Alpha</string>
 </resources>

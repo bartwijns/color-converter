@@ -71,7 +71,8 @@
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:id="@+id/rgb_fields">
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -79,17 +80,18 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/red"
-                    android:id="@+id/textView4" />
-
                 <EditText
                     style="@style/RGBEditText"
                     android:id="@+id/txt_red"
                     android:text="@string/default_red" />
+
+                <SeekBar
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/bar_red"
+                    android:indeterminate="false"
+                    android:max="@integer/rgb_max"
+                    android:thumbTint="@color/red"/>
             </LinearLayout>
 
             <LinearLayout
@@ -97,18 +99,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal" >
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/green"
-                    android:id="@+id/textView6" />
 
                 <EditText
                     style="@style/RGBEditText"
                     android:id="@+id/txt_green"
                     android:text="@string/default_green" />
+
+                <SeekBar
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/bar_green"
+                    android:indeterminate="false"
+                    android:max="@integer/rgb_max"
+                    android:thumbTint="@color/green"/>
             </LinearLayout>
 
             <LinearLayout
@@ -117,30 +120,45 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal" >
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/blue"
-                    android:id="@+id/textView5" />
-
                 <EditText
                     style="@style/RGBEditText"
                     android:id="@+id/txt_blue"
                     android:text="@string/default_blue" />
+
+                <SeekBar
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/bar_blue"
+                    android:indeterminate="false"
+                    android:max="@integer/rgb_max"
+                    android:thumbTint="@color/blue"/>
+
             </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/field_alpha">
+
+                <EditText
+                    style="@style/RGBEditText"
+                    android:id="@+id/txt_alpha"
+                    android:text="@string/default_alpha" />
+
+                <SeekBar
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/bar_alpha"
+                    android:indeterminate="false"
+                    android:max="@integer/rgb_max"
+                    android:thumbTint="@color/black" />
+            </LinearLayout>
+
 
         </LinearLayout>
 
     </LinearLayout>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/picker"
-        android:id="@+id/button_picker"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -148,21 +166,30 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/secondary_txt"
         android:id="@+id/disp_color"
-        android:layout_above="@+id/button_picker"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/check_secondary"
         android:gravity="center"
         android:textColor="@color/startingColor"
-        android:background="@color/startingColor" />
+        android:background="@color/startingColor"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/linearLayout2" />
 
     <CheckBox
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/secondary_txt"
         android:id="@+id/check_secondary"
-        android:layout_below="@+id/linearLayout2"
         android:layout_alignParentStart="true"
-        android:checked="false" />
+        android:checked="false"
+        android:layout_above="@+id/check_alpha" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/alpha_txt"
+        android:id="@+id/check_alpha"
+        android:layout_alignParentStart="true"
+        android:checked="false"
+        android:layout_above="@+id/disp_color" />
 
 </RelativeLayout>

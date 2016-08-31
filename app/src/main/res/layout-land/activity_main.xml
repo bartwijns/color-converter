@@ -36,6 +36,7 @@
             android:id="@+id/textView2"
             android:layout_weight="1"
             android:gravity="center" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -45,33 +46,61 @@
         android:layout_below="@+id/linearLayout"
         android:weightSum="2"
         android:id="@+id/linearLayout2"
-        android:layout_alignEnd="@+id/linearLayout">
+        android:layout_alignEnd="@+id/linearLayout"
+        android:baselineAligned="false">
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="151dp"
-            android:layout_height="wrap_content">
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
 
-            <TextView
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="151dp"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="@string/hashtag"
+                    android:id="@+id/textView3" />
+
+                <EditText
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/txt_hex"
+                    android:layout_weight="0.24"
+                    android:hint="@string/hex_hint"
+                    android:text="@string/default_hex" />
+            </LinearLayout>
+
+            <CheckBox
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="@string/hashtag"
-                android:id="@+id/textView3" />
+                android:text="@string/secondary_txt"
+                android:id="@+id/check_secondary"
+                android:checked="false"
+                android:layout_alignParentBottom="false"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_above="@+id/check_alpha" />
 
-            <EditText
-                android:layout_width="0dp"
+            <CheckBox
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/txt_hex"
-                android:layout_weight="0.24"
-                android:hint="@string/hex_hint"
-                android:text="@string/default_hex" />
-        </LinearLayout>
+                android:text="@string/alpha_txt"
+                android:id="@+id/check_alpha"
+                android:checked="false"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
 
         <LinearLayout
             android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/rgb_fields">
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -79,17 +108,19 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/red"
-                    android:id="@+id/textView4" />
-
                 <EditText
                     style="@style/RGBEditText"
                     android:id="@+id/txt_red"
-                    android:text="@string/default_red" />
+                    android:text="@string/default_red"
+                    android:layout_width="wrap_content" />
+
+                <SeekBar
+                    android:layout_width="130dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/bar_red"
+                    android:max="@integer/rgb_max"
+                    android:indeterminate="false"
+                    android:thumbTint="@color/red"/>
             </LinearLayout>
 
             <LinearLayout
@@ -97,18 +128,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal" >
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/green"
-                    android:id="@+id/textView6" />
 
                 <EditText
                     style="@style/RGBEditText"
                     android:id="@+id/txt_green"
-                    android:text="@string/default_green" />
+                    android:text="@string/default_green"
+                    android:layout_width="wrap_content" />
+
+                <SeekBar
+                    android:layout_width="130dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/bar_green"
+                    android:indeterminate="false"
+                    android:max="@integer/rgb_max"
+                    android:thumbTint="@color/green"/>
             </LinearLayout>
 
             <LinearLayout
@@ -117,30 +150,46 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal" >
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/blue"
-                    android:id="@+id/textView5" />
-
                 <EditText
                     style="@style/RGBEditText"
                     android:id="@+id/txt_blue"
-                    android:text="@string/default_blue" />
+                    android:text="@string/default_blue"
+                    android:layout_width="wrap_content" />
+
+                <SeekBar
+                    android:layout_width="130dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/bar_blue"
+                    android:max="@integer/rgb_max"
+                    android:indeterminate="false"
+                    android:thumbTint="@color/blue"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/field_alpha">
+
+                <EditText
+                    style="@style/RGBEditText"
+                    android:id="@+id/txt_alpha"
+                    android:text="@string/default_alpha"
+                    android:layout_width="wrap_content" />
+
+                <SeekBar
+                    android:layout_width="130dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/bar_alpha"
+                    android:max="@integer/rgb_max"
+                    android:indeterminate="false"
+                    android:thumbTint="@color/black"/>
+
             </LinearLayout>
 
         </LinearLayout>
 
     </LinearLayout>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/picker"
-        android:id="@+id/button_picker"
-        android:layout_alignTop="@+id/space"
-        android:layout_toStartOf="@+id/space" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -156,22 +205,12 @@
         android:layout_toEndOf="@+id/space"
         android:layout_alignParentBottom="true" />
 
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/secondary_txt"
-        android:id="@+id/check_secondary"
-        android:checked="false"
-        android:layout_below="@+id/button_picker"
-        android:layout_alignStart="@+id/button_picker"
-        android:layout_toStartOf="@+id/space"
-        android:layout_alignEnd="@+id/space" />
-
     <Space
         android:layout_width="100dp"
         android:layout_height="100dp"
+        android:id="@+id/space"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:id="@+id/space" />
+        android:layout_below="@+id/linearLayout2" />
 
 </RelativeLayout>
