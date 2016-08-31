@@ -120,7 +120,8 @@
                     android:id="@+id/bar_red"
                     android:max="@integer/rgb_max"
                     android:indeterminate="false"
-                    android:thumbTint="@color/red"/>
+                    android:thumbTint="@color/red"
+                    android:progressTint="@color/red" />
             </LinearLayout>
 
             <LinearLayout
@@ -141,7 +142,8 @@
                     android:id="@+id/bar_green"
                     android:indeterminate="false"
                     android:max="@integer/rgb_max"
-                    android:thumbTint="@color/green"/>
+                    android:thumbTint="@color/green"
+                    android:progressTint="@color/green" />
             </LinearLayout>
 
             <LinearLayout
@@ -162,7 +164,8 @@
                     android:id="@+id/bar_blue"
                     android:max="@integer/rgb_max"
                     android:indeterminate="false"
-                    android:thumbTint="@color/blue"/>
+                    android:thumbTint="@color/blue"
+                    android:progressTint="@color/blue" />
             </LinearLayout>
 
             <LinearLayout
@@ -183,7 +186,8 @@
                     android:id="@+id/bar_alpha"
                     android:max="@integer/rgb_max"
                     android:indeterminate="false"
-                    android:thumbTint="@color/black"/>
+                    android:thumbTint="@color/black"
+                    android:progressTint="@color/black" />
 
             </LinearLayout>
 
